@@ -23,6 +23,8 @@
         * Bên trên là một ví dụ về hàm **sigmoid function (logical activation)** -  một Transfer Function. Kết quả của Sigmoid Function thuộc khoảng [0,1] nên còn gọi là hàm chuẩn hóa (**Normalized Function**).
         * ![sigmoid](../images/sigmoid.png)
         * Kết quả xử lý tại các Neuron (**Output**) đôi khi rất lớn, vì vậy **transfer function** được sử dụng để xử lý output này trước khi chuyển đến layer tiếp theo
+        * Ta có một số hàm **transfer function** thường dùng như: 
+            ![tranFunc_2](../images/tranFunc_2.png)
         * Đôi khi thay vì sử dụng Transfer Function người ta sử dụng giá trị ngưỡng (**Threshold value**) để kiểm soát các output của các neuron tại một layer nào đó trước khi chuyển các output này đến các Layer tiếp theo. Nếu output của một neuron nào đó nhỏ hơn **Threshold** thì nó sẻ không được chuyển đến Layer tiếp theo. 
 
 ## Quá trình học (Learning Processing) của ANN
@@ -36,3 +38,5 @@
     * Đối với **on-line training** thì các trọng số của mạng (**weights**) được cập nhật ngay lập tức sau khi một input pattern được đưa vào mạng. 
     * **Stochastic training** cũng giống như **on-line training** nhưng việc chọn các input patterns để đưa vào mạng từ training set được thực hiện ngẫu nhiên (random). _SGD (Stochastic Gradient Descent)_ là một ví dụ về **Stochastic training**.
     * **Batch training** thì tất cả các input patterns được đưa vào mạng cùng lúc và sau đó cập nhật các trọng số mạng đồng thời. Ưu điểm của **on-line training** là tiết kiệm bộ nhớ vì không cần lưu lại số lượng lớn các input patterns trong bộ nhớ.
+
+<video class="AxiomVideoHTML" preload="auto" src="blob:https://onlinexperiences.com/94fad893-f34a-4204-854b-64306970c040" autoplay=""></video>

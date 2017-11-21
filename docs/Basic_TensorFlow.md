@@ -2,7 +2,14 @@
 
 ## Khái quát chung về TensorFlow
 
-* TensorFlow biểu diễn các đại lượng tính toán dưới dạng đồ thị (**graph**). Trong đồ thị, các tham số được liên kết với nhau bởi các **Nodes**. Các Nodes gồm có các thành phần:
+* Để sử dụng TensorFlow, ta cần hiểu được cách Tensorflow hoạt động:
+    * Biểu diễn các đại lượng tính toán dưới dạng đồ thị **graphs**
+    * Xử lý các **graphs** trong ngữ cảnh **Sessions**
+    * Biểu diễn data dưới dạng các **Tensors**
+    * Giữ gìn các trạng thái bằng các **Variables**
+    * Sử dụng nguồn cấp và tìm nạp để lấy dữ liệu vào và ra các **arbitrary operations**
+
+* Một chương trình trong TensorFlow được biểu diễn dưới dạng các đồ thị. Trong đồ thị, các tham số được liên kết với nhau bởi các **Nodes**. Các Nodes gồm có các thành phần:
     * Operation (op - toán tử): biểu thị cho các đại lượng tính toán. 
     * Các input là các sensors và output cũng là các sensors
     * Các Tensors: tensor trong TensorFlow là các mảng nhiều chiều.
@@ -14,22 +21,128 @@
 * Cấu trúc dữ liệu của tensor là các mảng n chiều. 
     * Các khái niệm trong Tensor: Type, Rank, Shape
     * Rank (Hạng của tensor): là số chiều của mảng. Ví dụ như  
-        ![rank](../images/img_1.png)
+        ![rank](../images/img_1.png)    
         * Rank 0 biểu thị các đại lượng vô hướng, Rank-1 tương ứng với các đại lượng vector
     * Shape trong tensor: đặc trưng cho số lượng các phần tử của mỗi chiều trong tensor
     ![shape](../images/img_2.png)
     * Type: kiểu dữ liệu của tensor, có thể là float, double, int64, int32, int16, string ...
+* Tạo các đối tượng `tf.Tensors` (**tensors**):
+    ```tf
+    Rank 0: ignition = tf.Variable(451, tf.int16)
+            floating = tf.Variable(3.14159265359, tf.float64)
+
+    Rank 1: cool_numbers  = tf.Variable([3.14159, 2.71828], tf.float32)
+            first_primes = tf.Variable([2, 3, 5, 7, 11], tf.int32)
+
+    Higher Ranks: rank2_1 = tf.Variable([[7],[11]], tf.int16) 
+                rank2_2 = tf.Variable([[False, True],[True, False]], tf.bool) - rank 2
+                rank2_3 = tf.Variable([[4], [9], [16], [25]], tf.int32) - rank 2
+                rank4 = tf.Variable([10, 299, 299, 3], tf.int32)
+    ```
+* Để lấy rank của 1 `tf.Tensor` ta gọi `tf.rank`
+    ```tf
+    r = tf.rank(myTensor)
+    ```
+
+### Variables
+
+* Các thao tác với Variables: Creation, Initialization, Saving và Loading. Variables có đặc điểm:
+    * Lưu giữ, cập nhật các tham số, maintain các trạng thái của đồ thị 
+    * Được lưu trữ trong vùng đệm
+    * Có thể được lưu lại vào bộ nhớ ngoài trong và sau khi training
+* Class `tf.Variable` được dùng để thao tác với các Variables. Một class `tf.Variable` lưu giữ một tensor mà giá trị của tensor đó có thể thay đổi trong quá trình hoạt động:
+* _Creating a Variable_: 
+    * Ta có thể tạo 1 Variable bằng việc gọi `tf.get_variable`. Hàm này cần truyền vào tên của Variable, tên này sẽ được sử dụng bởi một replica (bản sao) khác, để tham chiếu tới variable. Ví dụ, ta truyền vào tên và shape của tensor:
+    ```tf
+    my_variable = tf.get_variable("my_variable", [1, 2, 3])
+    ```
+
+    * Hàm trên khởi tạo một variable có tên _"my_variable"_ với 1 tensor 3 chiều có shape là [1, 2, 3]. Variable này nhận giá trị mặc định là `dtype` `tf.float32` và các giá trị được khởi tạo ngẫu nhiên qua hàm `tf.glorot_uniform_initializer`     
+    * Hoặc ta có một khởi tạo đầy đủ hơn
+    ```tf
+    my_int_variable = tf.get_variable("my_int_variable", [1, 2, 3], dtype=tf.int32, 
+  initializer=tf.zeros_initializer)
+    ```     
+
+    * Nếu ta không khai báo shape của tensor thì shape của initializer sẽ được sử dụng. 
+    ```tf
+    other_variable = tf.get_variable("other_variable", dtype=tf.int32, 
+  initializer=tf.constant([23, 42]))
+    ```    
+* _Initializing variables_:
+    * Trước khi sử dụng một variable, ta cần phải khởi tạo nó trước. Để gọi tất cả biến có khả năng training ta gọi `tf.global_variables_initializer()`. Để khởi tạo tất cả các biến này, ta gọi
+    ```tf
+    session.run(tf.global_variables_initializer())
+    ```
+    hoặc, có thể khởi tạo từng biến một bằng cách 
+    ```tf
+    session.run(my_variable.initializer)
+    ```
+    * Để kiểm tra các variables chưa được khởi tạo, ta sử dụng: 
+    ```tf
+    print(session.run(tf.report_uninitialized_variables()))
+    ```
+    * Một lưu ý nho nhỏ rằng, `tf.global_variables_initializer` sẽ không ấn định thứ tự của các variable được khởi tạo. Do đó nếu giá trị khởi tạo của 1 variable phụ thuộc vào 1 variable khác thì có thể ta sẽ gặp lỗi. Và để xử lý nó, ta dùng hàm `variable.initialized_value()`, ví dụ: 
+    ```tf
+    v = tf.get_variable("v", shape=(), initializer=tf.zeros_initializer())
+    w = tf.get_variable("w", initializer=v.initialized_value() + 1)
+    ```
+* _Saving and Restoring variables_:
+    * Sử dụng class `tf.train.Saver` để saving và restoring models. 
+    * Checkpoint Files: Variables được lưu dưới dạng các binary files, bao gồm các ánh xạ từ tên các variables tới các tensor values
+    * Ví dụ dưới đây ta saving variables vào disk 
+    ```tf
+    # Create some variables.
+    v1 = tf.get_variable("v1", shape=[3], initializer = tf.zeros_initializer)
+    v2 = tf.get_variable("v2", shape=[5], initializer = tf.zeros_initializer)
+
+    inc_v1 = v1.assign(v1+1)
+    dec_v2 = v2.assign(v2-1)
+
+    # Add an op to initialize the variables.
+    init_op = tf.global_variables_initializer()
+
+    # Add ops to save and restore all the variables.
+    saver = tf.train.Saver()
+
+    # Later, launch the model, initialize the variables, do some work, and save the
+    # variables to disk.
+    with tf.Session() as sess:
+    sess.run(init_op)
+    # Do some work with the model.
+    inc_v1.op.run()
+    dec_v2.op.run()
+    # Save the variables to disk.
+    save_path = saver.save(sess, "/tmp/model.ckpt")
+    print("Model saved in file: %s" % save_path)
+    ``` 
+    * Ví dụ dưới đây ta restoring variables từ disk
+    ```tf
+    tf.reset_default_graph()
+
+    # Create some variables.
+    v1 = tf.get_variable("v1", shape=[3])
+    v2 = tf.get_variable("v2", shape=[5])
+
+    # Add ops to save and restore all the variables.
+    saver = tf.train.Saver()
+
+    # Later, launch the model, use the saver to restore variables from disk, and
+    # do some work with the model.
+    with tf.Session() as sess:
+    # Restore variables from disk.
+    saver.restore(sess, "/tmp/model.ckpt")
+    print("Model restored.")
+    # Check the values of the variables
+    print("v1 : %s" % v1.eval())
+    print("v2 : %s" % v2.eval())
+    ```
+    * Khi không truyền tham số vào `tf.train.Saver()` -> Tất cả các variable sẽ được lưu vào đồ thị. Trong ví dụ trên, nếu ta chỉ muốn lưu lại giá trị v2 chứ không phải v1 thì có thể viết:
+    ```tf 
+    saver = tf.train.Saver({"v2": v2})
+    ``` 
 
 ### Graphs và Sessions
-
-* TensorFlow sử dụng **dataflow graph** để đại diện cho mối quan hệ tính toán giữa các operations. Với các API ở được cung cấp ở mức thấp trong TensorFlow, điều đầu tiên bạn cần phải làm là định nghĩa ra một dataflow graph và tạo ra một session để chạy graph đó trên local (hoặc remote) devices.   
-    ![dataflow graph](../images/img_3.gif)
-* Dataflow là một cách thức lập trình phổ biến trong tính toán song song. Trong dataflow graph, các `nodes` đại diện cho các khối tính toán, các `edges` đại diện cho data được đưa vào và trả lại trong các biểu thức tính toán. Ví dụ trong tensorFlow, `tf.matmul` operation (dùng để tính toán phép nhân ma trận) đại diện cho một node với 2 edges đầu vào là 2 ma trận và 1 edge đầu ra là 1 ma trận (tích của 2 ma trận đầu vào). 
-* Sử dụng dataflow có những nhiều lợi ích khi bạn xây dựng hệ thống của mình, đó là: 
-    * **Parallelism** (tính song song): bằng việc sử dụng các edges để thể hiện mối liên quan giữa các operations, hệ thống sẽ dễ dàng xác định được operations nào có thể được đưa vào tính toán song song. Tức là những operations không có mối liên hệ khăng khít vậy thì chúng có thể được tính toán đồng thời nhằm tăng hiệu năng. 
-    * **Distributed execution** (xử lý phân tán): với việc sử dụng các edges đại diện cho các values được truyền (flow) như thế nào giữa các operations, vậy thì tensorFlow dựa vào đó để có thể xử lý data trên các operations khác nhau trên các thiết bị khác nhau (CPUs hoặc GPUs). 
-    * **Compilation**: `XLA compiler` trong TensorFlow sử dụng các thông tin trong dataflow graph để xử lý code tối ưu hơn.
-    * **Portability** (tính di động): Dataflow graph không phụ thuộc vào ngôn ngữ mà ta sử dụng. Ta có thể build nó trên Python, sau đó lưu trữ trong`SavedModel`, và có thể lấy lại ở trong một chương trình C++ nào đó. 
 
 #### Graph
 
@@ -45,7 +158,16 @@
     * Đưa các đại lượng tính toán trong đồ thị (các Nodes) vào trong các thành phần xử lý (CPU, GPU) và cung cấp cách thức để thực hiện các đại lượng đó. 
     * Trả lại kết quả là các tensor, dưới dạng mảng nhiều chiều. 
 
-### Saving and Restoring <a id="save-n-store"></a>
+#### Dataflow
+
+* TensorFlow sử dụng **dataflow graph** để đại diện cho mối quan hệ tính toán giữa các operations. Với các API ở được cung cấp ở mức thấp trong TensorFlow, điều đầu tiên bạn cần phải làm là định nghĩa ra một dataflow graph và tạo ra một session để chạy graph đó trên local (hoặc remote) devices. Đối với các API ở mức cao (như `tf.estimator`) thì chúng sẽ giúp ta làm các công việc này.   
+    ![dataflow graph](../images/img_3.gif)
+* Dataflow là một cách thức lập trình phổ biến trong tính toán song song. Trong dataflow graph, các `nodes` đại diện cho các khối tính toán, các `edges` đại diện cho data được đưa vào và trả lại trong các biểu thức tính toán. Ví dụ trong tensorFlow, `tf.matmul` operation (dùng để tính toán phép nhân ma trận) đại diện cho một node với 2 edges đầu vào là 2 ma trận và 1 edge đầu ra là 1 ma trận (tích của 2 ma trận đầu vào). 
+* Sử dụng dataflow có những nhiều lợi ích khi bạn xây dựng hệ thống của mình, đó là: 
+    * **Parallelism** (tính song song): bằng việc sử dụng các edges để thể hiện mối liên quan giữa các operations, hệ thống sẽ dễ dàng xác định được operations nào có thể được đưa vào tính toán song song. Tức là những operations không có mối liên hệ khăng khít vậy thì chúng có thể được tính toán đồng thời nhằm tăng hiệu năng. 
+    * **Distributed execution** (xử lý phân tán): với việc sử dụng các edges đại diện cho các values được truyền (flow) như thế nào giữa các operations, vậy thì tensorFlow dựa vào đó để có thể xử lý data trên các operations khác nhau trên các thiết bị khác nhau (CPUs hoặc GPUs). 
+    * **Compilation**: `XLA compiler` trong TensorFlow sử dụng các thông tin trong dataflow graph để xử lý code được tối ưu hơn.
+    * **Portability** (tính di động): Dataflow graph không phụ thuộc vào ngôn ngữ mà ta sử dụng. Ta có thể build nó trên Python, sau đó lưu trữ trong`SavedModel`, và có thể lấy lại ở trong một chương trình C++ nào đó. 
 
 ### Estimators API <a id="estimators"></a>
 
