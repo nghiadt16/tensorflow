@@ -2,7 +2,7 @@
 
 ## Khái quát chung về TensorFlow
 
-* Để sử dụng TensorFlow, ta cần hiểu được cách Tensorflow hoạt động:
+* Để sử dụng TensorFlow, ta cần hiểu được cách Tensorflow hoạt động:
     * Biểu diễn các đại lượng tính toán dưới dạng đồ thị **graphs**
     * Xử lý các **graphs** trong ngữ cảnh **Sessions**
     * Biểu diễn data dưới dạng các **Tensors**
@@ -31,15 +31,15 @@
     Rank 0: ignition = tf.Variable(451, tf.int16)
             floating = tf.Variable(3.14159265359, tf.float64)
 
-    Rank 1: cool_numbers  = tf.Variable([3.14159, 2.71828], tf.float32)
+    Rank 1: cool_numbers  = tf.Variable([3.14159, 2.71828], tf.float32)
             first_primes = tf.Variable([2, 3, 5, 7, 11], tf.int32)
 
-    Higher Ranks: rank2_1 = tf.Variable([[7],[11]], tf.int16) 
+    Higher Ranks: rank2_1 = tf.Variable([[7],[11]], tf.int16) 
                 rank2_2 = tf.Variable([[False, True],[True, False]], tf.bool) - rank 2
                 rank2_3 = tf.Variable([[4], [9], [16], [25]], tf.int32) - rank 2
                 rank4 = tf.Variable([10, 299, 299, 3], tf.int32)
     ```
-* Để lấy rank của 1 `tf.Tensor` ta gọi `tf.rank`
+* Để lấy rank của 1 `tf.Tensor` ta gọi `tf.rank`
     ```tf
     r = tf.rank(myTensor)
     ```
@@ -47,8 +47,8 @@
 ### Variables
 
 * Các thao tác với Variables: Creation, Initialization, Saving và Loading. Variables có đặc điểm:
-    * Lưu giữ, cập nhật các tham số, maintain các trạng thái của đồ thị 
-    * Được lưu trữ trong vùng đệm
+    * Lưu giữ, cập nhật các tham số, maintain các trạng thái của đồ thị 
+    * Được lưu trữ trong vùng đệm
     * Có thể được lưu lại vào bộ nhớ ngoài trong và sau khi training
 * Class `tf.Variable` được dùng để thao tác với các Variables. Một class `tf.Variable` lưu giữ một tensor mà giá trị của tensor đó có thể thay đổi trong quá trình hoạt động:
 * _Creating a Variable_: 
@@ -57,7 +57,7 @@
     my_variable = tf.get_variable("my_variable", [1, 2, 3])
     ```
 
-    * Hàm trên khởi tạo một variable có tên _"my_variable"_ với 1 tensor 3 chiều có shape là [1, 2, 3]. Variable này nhận giá trị mặc định là `dtype` `tf.float32` và các giá trị được khởi tạo ngẫu nhiên qua hàm `tf.glorot_uniform_initializer`     
+    * Hàm trên khởi tạo một variable có tên _"my_variable"_ với 1 tensor 3 chiều có shape là [1, 2, 3]. Variable này nhận giá trị mặc định là `dtype` `tf.float32` và các giá trị được khởi tạo ngẫu nhiên qua hàm `tf.glorot_uniform_initializer`     
     * Hoặc ta có một khởi tạo đầy đủ hơn
     ```tf
     my_int_variable = tf.get_variable("my_int_variable", [1, 2, 3], dtype=tf.int32, 
@@ -78,7 +78,7 @@
     ```tf
     session.run(my_variable.initializer)
     ```
-    * Để kiểm tra các variables chưa được khởi tạo, ta sử dụng: 
+    * Để kiểm tra các variables chưa được khởi tạo, ta sử dụng: 
     ```tf
     print(session.run(tf.report_uninitialized_variables()))
     ```
@@ -142,13 +142,13 @@
     saver = tf.train.Saver({"v2": v2})
     ``` 
 
-### Graphs và Sessions
+### Graphs và Sessions
 
 #### Graph
 
 * Để xây dựng các graph, TensorFlow cung cấp một API có tên là `tf.Graph`, một tf.Graph sẽ mang 2 thông tin đó là: 
-    * **Graph structure**: Các nodes và các edges trong graph mô tả cách thức các operations được sinh ra như thế nào chứ chúng không mô tả operations được sử dụng như thế nào. `Graph structure`, ta có thể thấy nó mang nhiều thông tin hữu ích, trực quan nhưng không phải toàn bộ thông tin được viết trong source code.
-    * **Graph collections**: TensorFlow cung cấp một cách thức lưu trữ tập các metadata trong `tf.Graph`. Ví dụ như khi bạn tạo một `tf.Variable`, nó sẽ được đưa vào các collections mặc định là "global variables" và "trainable variables". Ngoài ra ta có thể tự tạo ra các collection với việc sử dụng hàm `tf.add_to_collection` và gọi ra một colllection để sử dụng bằng việc gọi hàm `tf.get_collection`. 
+    * **Graph structure**: Các nodes và các edges trong graph mô tả cách thức các operations được sinh ra như thế nào chứ chúng không mô tả operations được sử dụng như thế nào. `Graph structure`, ta có thể thấy nó mang nhiều thông tin hữu ích, trực quan nhưng không phải toàn bộ thông tin được viết trong source code.
+    * **Graph collections**: TensorFlow cung cấp một cách thức lưu trữ tập các metadata trong `tf.Graph`. Ví dụ như khi bạn tạo một `tf.Variable`, nó sẽ được đưa vào các collections mặc định là "global variables" và "trainable variables". Ngoài ra ta có thể tự tạo ra các collection với việc sử dụng hàm `tf.add_to_collection` và gọi ra một colllection để sử dụng bằng việc gọi hàm `tf.get_collection`. 
 * Xây dựng một `tf.Graph`: Để xây dựng một graph, trước tiên bạn cần sử dụng các API để tạo ra các nodes (`tf.Operation`) và các edges (`tf.Tensor`), rồi đưa chúng vào `tf.Graph`. TensorFlow cung cấp một **default graph** cho bạn (đương nhiên bạn có thể tự xây dựng graph, thậm chí multiple graphs trong TensorFlow). Ví dụ:
     * Gọi `tf.matmul(x, y)` sẽ tạo một `tf.Operation` để thực hiện phép nhân ma trận của 2 `tf.Tensor` x và y, thêm chúng vào `default graph` và trả về `tf.Tensor` với kết quả là phép nhân của 2 ma trận. 
 
@@ -160,13 +160,13 @@
 
 #### Dataflow
 
-* TensorFlow sử dụng **dataflow graph** để đại diện cho mối quan hệ tính toán giữa các operations. Với các API ở được cung cấp ở mức thấp trong TensorFlow, điều đầu tiên bạn cần phải làm là định nghĩa ra một dataflow graph và tạo ra một session để chạy graph đó trên local (hoặc remote) devices. Đối với các API ở mức cao (như `tf.estimator`) thì chúng sẽ giúp ta làm các công việc này.   
+* TensorFlow sử dụng **dataflow graph** để đại diện cho mối quan hệ tính toán giữa các operations. Với các API ở được cung cấp ở mức thấp trong TensorFlow, điều đầu tiên bạn cần phải làm là định nghĩa ra một dataflow graph và tạo ra một session để chạy graph đó trên local (hoặc remote) devices. Đối với các API ở mức cao (như `tf.estimator`) thì chúng sẽ giúp ta làm các công việc này.   
     ![dataflow graph](../images/img_3.gif)
-* Dataflow là một cách thức lập trình phổ biến trong tính toán song song. Trong dataflow graph, các `nodes` đại diện cho các khối tính toán, các `edges` đại diện cho data được đưa vào và trả lại trong các biểu thức tính toán. Ví dụ trong tensorFlow, `tf.matmul` operation (dùng để tính toán phép nhân ma trận) đại diện cho một node với 2 edges đầu vào là 2 ma trận và 1 edge đầu ra là 1 ma trận (tích của 2 ma trận đầu vào). 
-* Sử dụng dataflow có những nhiều lợi ích khi bạn xây dựng hệ thống của mình, đó là: 
+* Dataflow là một cách thức lập trình phổ biến trong tính toán song song. Trong dataflow graph, các `nodes` đại diện cho các khối tính toán, các `edges` đại diện cho data được đưa vào và trả lại trong các biểu thức tính toán. Ví dụ trong tensorFlow, `tf.matmul` operation (dùng để tính toán phép nhân ma trận) đại diện cho một node với 2 edges đầu vào là 2 ma trận và 1 edge đầu ra là 1 ma trận (tích của 2 ma trận đầu vào). 
+* Sử dụng dataflow có những nhiều lợi ích khi bạn xây dựng hệ thống của mình, đó là: 
     * **Parallelism** (tính song song): bằng việc sử dụng các edges để thể hiện mối liên quan giữa các operations, hệ thống sẽ dễ dàng xác định được operations nào có thể được đưa vào tính toán song song. Tức là những operations không có mối liên hệ khăng khít vậy thì chúng có thể được tính toán đồng thời nhằm tăng hiệu năng. 
-    * **Distributed execution** (xử lý phân tán): với việc sử dụng các edges đại diện cho các values được truyền (flow) như thế nào giữa các operations, vậy thì tensorFlow dựa vào đó để có thể xử lý data trên các operations khác nhau trên các thiết bị khác nhau (CPUs hoặc GPUs). 
-    * **Compilation**: `XLA compiler` trong TensorFlow sử dụng các thông tin trong dataflow graph để xử lý code được tối ưu hơn.
+    * **Distributed execution** (xử lý phân tán): với việc sử dụng các edges đại diện cho các values được truyền (flow) như thế nào giữa các operations, vậy thì tensorFlow dựa vào đó để có thể xử lý data trên các operations khác nhau trên các thiết bị khác nhau (CPUs hoặc GPUs). 
+    * **Compilation**: `XLA compiler` trong TensorFlow sử dụng các thông tin trong dataflow graph để xử lý code được tối ưu hơn.
     * **Portability** (tính di động): Dataflow graph không phụ thuộc vào ngôn ngữ mà ta sử dụng. Ta có thể build nó trên Python, sau đó lưu trữ trong`SavedModel`, và có thể lấy lại ở trong một chương trình C++ nào đó. 
 
 ### Estimators API <a id="estimators"></a>
@@ -217,4 +217,4 @@
         # my_training_set is the function created in Step 1
         estimator.train(input_fn=my_training_set, steps=2000)
         ```
-    * Qua các bước trên ta có thể thấy việc sử dụng pre-made Estimators là không hề khó khăn, nó sẽ giúp ta có được một cách nhìn tổng quan về cách thức một model được tạo ra và sử dụng nó trong TensorFlow là như thế nào. 
+    * Qua các bước trên ta có thể thấy việc sử dụng pre-made Estimators là không hề khó khăn, nó sẽ giúp ta có được một cách nhìn tổng quan về cách thức một model được tạo ra và sử dụng nó trong TensorFlow là như thế nào. 
