@@ -74,7 +74,7 @@
     ```tf
     session.run(tf.global_variables_initializer())
     ```
-    hoặc, có thể khởi tạo từng biến một bằng cách 
+    hoặc, có thể khởi tạo từng biến một bằng cách 
     ```tf
     session.run(my_variable.initializer)
     ```
@@ -89,7 +89,7 @@
     ```
 * _Saving and Restoring variables_:
     * Sử dụng class `tf.train.Saver` để saving và restoring models. 
-    * Checkpoint Files: Variables được lưu dưới dạng các binary files, bao gồm các ánh xạ từ tên các variables tới các tensor values
+    * Checkpoint Files: Variables được lưu dưới dạng các binary files, bao gồm các ánh xạ từ tên các variables tới các tensor values
     * Ví dụ dưới đây ta saving variables vào disk 
     ```tf
     # Create some variables.
